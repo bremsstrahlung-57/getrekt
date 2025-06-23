@@ -1,0 +1,14 @@
+body{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.container {
+  height: 100%;
+  width: 100%;
+  background-color: wheat;
+  padding: 10px;
+}
+h1 {
+  color: darkolivegreen;
+}
