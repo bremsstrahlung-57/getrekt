@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "Server.c"
 
@@ -104,7 +105,7 @@ void parse_request_path(const char *request, char *path, size_t path_size)
     }
     start++;
 
-    const char *end = strchr(path, ' ');
+    const char *end = strchr(start, ' ');
     if (!end)
     {
         strcpy(path, "/");
