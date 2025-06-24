@@ -22,9 +22,27 @@ void send_response(int socket, char *data)
     write(socket, response, strlen(response));
 }
 
+void serve_file(int socket, int status, const char *status_text, const char *content_type, const char *body, size_t body_size)
+{
+    char header[1024];
+    int header_len = snprintf(header, sizeof(header),
+                              "HTTP/1.1 %d %s\r\n"
+                              "Content-Type: %s\r\n"
+                              "Content-Length: %zu\r\n"
+                              "Connection: close\r\n"
+                              "\r\n",
+                              status, status_text, content_type, body_size);
+
+    write(socket, header, header_len);
+    if (body && body_size > 0)
+    {
+        write(socket, body, body_size);
+    }
+}
+
 const char *get_mime_type(const char *path)
 {
-    const char *ext = strchr(path, '.');
+    const char *ext = strrchr(path, '.');
     if (!ext)
         return "text/plain";
 
@@ -100,6 +118,15 @@ char *read_file(const char *filename, size_t *file_size)
     return buffer;
 }
 
+void send_404(int socket)
+{
+    char filepath[512] = "./public/404.html";
+    const char *mime_type = get_mime_type(filepath);
+    size_t file_size;
+    char *file_content = read_file(filepath, &file_size);
+    serve_file(socket, 404, "Not Found", mime_type, file_content, file_size);
+}
+
 void launch(struct Server *server)
 {
     char buffer[30000];
@@ -121,35 +148,46 @@ void launch(struct Server *server)
         read(new_socket, buffer, sizeof(buffer) - 1);
         printf("\n%s\n", buffer);
 
-        if (strstr(buffer, "GET /status"))
-        {
-            char *res = "{\"status\": \"running\",\n\"server\": \"C-Server\",\n\"version\": \"1.0\"}";
-            send_response(new_socket, res);
-        }
-        else if (strstr(buffer, "GET /about"))
-        {
-            char *res = "About Page";
-            send_response(new_socket, res);
-        }
-        else if (strstr(buffer, "GET /home") || strstr(buffer, "GET / "))
-        {
-            char *res = "Home page";
-            send_response(new_socket, res);
-        }
-        else if (strstr(buffer, "GET /public"))
+        if (strstr(buffer, "GET /public"))
         {
             char path[256];
             int path_size = sizeof(path);
             parse_path(buffer, path, path_size);
             printf("Requested path: %s\n", path);
+
+            char filepath[512] = ".";
+            strcat(filepath, path);
+
+            printf("Looking for file: %s\n", filepath);
+
+            size_t file_size;
+            char *file_content = read_file(filepath, &file_size);
+
+            if (file_content)
+            {
+                const char *mime_type = get_mime_type(filepath);
+                serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
+                free(file_content);
+                printf("Served: %s (%s, %zu bytes)\n", filepath, mime_type, file_size);
+            }
+            else
+            {
+                printf("File not found: %s\n", filepath);
+                send_404(new_socket);
+            }
+        }
+        else if (strstr(buffer, "GET / "))
+        {
+            char filepath[512] = "./public/index.html";
+            const char *mime_type = get_mime_type(filepath);
+            size_t file_size;
+            char *file_content = read_file(filepath, &file_size);
+            serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
         }
         else
         {
-            send_response(new_socket, "404 - Doesn't Exist");
+            send_404(new_socket);
         }
-
-        // char *response = "HTTP/1.1 200 OK\r\nDate: Fri, 20 Jun 2025 17:10:33 GMT\r\nServer: Custom-C-Server/1.0 (Linux)\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nHello, World!";
-        // write(new_socket, response, strlen(response));
 
         close(new_socket);
     }
