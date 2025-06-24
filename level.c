@@ -184,6 +184,32 @@ void launch(struct Server *server)
             char *file_content = read_file(filepath, &file_size);
             serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
         }
+        else if (strstr(buffer, "POST /echo"))
+        {
+            int content_len;
+            sscanf(buffer, "POST /echo HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.5.0\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d", &content_len);
+
+            const char *content = strchr(buffer, '{');
+            char response[100];
+            char name[50];
+            char *start;
+            char *end;
+
+            start = strstr(content, "\"name\": \"");
+            if (start != NULL)
+            {
+                start += strlen("\"name\": \"");
+            }
+            end = strchr(start, '"');
+            if (end != NULL)
+            {
+                size_t len = end - start;
+                strncpy(name, start, len);
+                name[len] = '\0';
+            }
+            sprintf(response, "{\"echo\": \"%s\"}", name);
+            send_response(new_socket, response);
+        }
         else
         {
             send_404(new_socket);
