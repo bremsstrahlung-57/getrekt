@@ -1,4 +1,4 @@
 .vscode
-a.out
-level
+main
 code.txt
+makefile.mk

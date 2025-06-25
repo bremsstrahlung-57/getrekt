@@ -1,4 +1,6 @@
-#include "Server.c"
+#include "Server.h"
+#include "response.h"
+#include "todo.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -184,6 +186,28 @@ void launch(struct Server *server)
             char *file_content = read_file(filepath, &file_size);
             serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
         }
+        else if (strstr(buffer, "GET /api/todos"))
+        {
+            Todo todos[2];
+            todos[0].id = 1;
+            strcpy(todos[0].text, "Buy groceries");
+            todos[0].done = 0;
+            todos[1].id = 2;
+            strcpy(todos[1].text, "Read a book");
+            todos[1].done = 0;
+            get_todos(new_socket, todos, 2);
+        }
+        else if (strstr(buffer, "POST /api/todos"))
+        {
+            // Todo todos[2];
+            printf("%s\n",buffer);
+        }
+        else if (strstr(buffer, "PUT /api/todos/:id"))
+        {
+        }
+        else if (strstr(buffer, "DELETE /api/todos/:id"))
+        {
+        }
         else if (strstr(buffer, "POST /echo"))
         {
             int content_len;
@@ -218,10 +242,3 @@ void launch(struct Server *server)
         close(new_socket);
     }
 };
-
-int main()
-{
-    struct Server server = server_constructor(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 8080, 10, launch);
-    server.launch(&server);
-    return 0;
-}
