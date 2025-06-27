@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+Todo todos[100] = {
+    {1, "Buy milk", 0},
+    {2, "Write C code", 1}};
+int todo_count = 2;
+
 void send_response(int socket, char *data)
 {
     int content_length = strlen(data);
@@ -150,7 +155,20 @@ void launch(struct Server *server)
         read(new_socket, buffer, sizeof(buffer) - 1);
         printf("\n%s\n", buffer);
 
-        if (strstr(buffer, "GET /public"))
+        char method[10], bufpath[64];
+        char *start = &buffer[0];
+        char *end = strchr(start, ' ');
+        int len = end - start;
+        strncpy(method, start, len);
+        method[len] = '\0';
+
+        start = strchr(end, '/');
+        end = strchr(start, ' ');
+        len = end - start;
+        strncpy(bufpath, start, len);
+        bufpath[len] = '\0';
+
+        if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/public") == 0)
         {
             char path[256];
             int path_size = sizeof(path);
@@ -178,7 +196,7 @@ void launch(struct Server *server)
                 send_404(new_socket);
             }
         }
-        else if (strstr(buffer, "GET / "))
+        else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/ ") == 0)
         {
             char filepath[512] = "./public/index.html";
             const char *mime_type = get_mime_type(filepath);
@@ -186,29 +204,41 @@ void launch(struct Server *server)
             char *file_content = read_file(filepath, &file_size);
             serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
         }
-        else if (strstr(buffer, "GET /api/todos"))
+        else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            Todo todos[2];
-            todos[0].id = 1;
-            strcpy(todos[0].text, "Buy groceries");
-            todos[0].done = 0;
-            todos[1].id = 2;
-            strcpy(todos[1].text, "Read a book");
-            todos[1].done = 0;
-            get_todos(new_socket, todos, 2);
+            get_todos(new_socket, todos, todo_count);
         }
-        else if (strstr(buffer, "POST /api/todos"))
-        {
-            // Todo todos[2];
-            printf("%s\n",buffer);
-        }
-        else if (strstr(buffer, "PUT /api/todos/:id"))
-        {
-        }
-        else if (strstr(buffer, "DELETE /api/todos/:id"))
-        {
-        }
-        else if (strstr(buffer, "POST /echo"))
+        // TODO: Extract "text" value from body
+        //  else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
+        //  {
+        //  }
+        //  else if (strstr(buffer, "PUT /api/todos/chn"))
+        //  {
+        //      Todo todos[2];
+        //      todos[0].id = 1;
+        //      strcpy(todos[0].text, "Buy groceries");
+        //      todos[0].done = 0;
+        //      todos[1].id = 2;
+        //      strcpy(todos[1].text, "Read a book");
+        //      todos[1].done = 0;
+        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
+        //      update_todo(new_socket, todos, 0);
+        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
+        //  }
+        //  else if (strstr(buffer, "DELETE /api/todos/del"))
+        //  {
+        //      Todo todos[2];
+        //      todos[0].id = 1;
+        //      strcpy(todos[0].text, "Buy groceries");
+        //      todos[0].done = 0;
+        //      todos[1].id = 2;
+        //      strcpy(todos[1].text, "Read a book");
+        //      todos[1].done = 0;
+        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
+        //      delete_todo(new_socket, todos, 0);
+        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
+        //  }
+        else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
             int content_len;
             sscanf(buffer, "POST /echo HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.5.0\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d", &content_len);
