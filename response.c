@@ -208,36 +208,34 @@ void launch(struct Server *server)
         {
             get_todos(new_socket, todos, todo_count);
         }
-        // TODO: Extract "text" value from body
-        //  else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
-        //  {
-        //  }
-        //  else if (strstr(buffer, "PUT /api/todos/chn"))
-        //  {
-        //      Todo todos[2];
-        //      todos[0].id = 1;
-        //      strcpy(todos[0].text, "Buy groceries");
-        //      todos[0].done = 0;
-        //      todos[1].id = 2;
-        //      strcpy(todos[1].text, "Read a book");
-        //      todos[1].done = 0;
-        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
-        //      update_todo(new_socket, todos, 0);
-        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
-        //  }
-        //  else if (strstr(buffer, "DELETE /api/todos/del"))
-        //  {
-        //      Todo todos[2];
-        //      todos[0].id = 1;
-        //      strcpy(todos[0].text, "Buy groceries");
-        //      todos[0].done = 0;
-        //      todos[1].id = 2;
-        //      strcpy(todos[1].text, "Read a book");
-        //      todos[1].done = 0;
-        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
-        //      delete_todo(new_socket, todos, 0);
-        //      get_todos(new_socket, todos, sizeof(todos) / sizeof(todos[0]));
-        //  }
+
+        // TODO: Create and store the Todo
+        else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
+        {
+            char text[512];
+
+            char *text_start = strstr(buffer, "\"text\":");
+            if (!text_start)
+            {
+                perror("ERROR!, 'text' field not found.");
+                exit(EXIT_FAILURE);
+            }
+            text_start = strchr(text_start + strlen("\"text\":"), '"');
+            if (!text_start)
+            {
+                perror("ERROR!, Opening quote for 'text' value not found.");
+                exit(EXIT_FAILURE);
+            }
+            text_start++;
+            char *text_end = strchr(text_start, '"');
+            if (!text_end)
+            {
+                perror("ERROR!, Closing quote for 'text' value not found.");
+                exit(EXIT_FAILURE);
+            }
+            int len = text_end - text_start;
+            strncpy(text, text_start, len);
+        }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
             int content_len;
@@ -268,7 +266,6 @@ void launch(struct Server *server)
         {
             send_404(new_socket);
         }
-
         close(new_socket);
     }
 };
