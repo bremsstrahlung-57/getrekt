@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todo</title>
-</head>
-<body>
-    
-</body>
+    <!-- <link rel="stylesheet" href="./static/todo.css" /> -->
+  </head>
+  <body>
+    <div class="todo_box">
+      <a href="/public/index.html">&#8592; HOME</a>
+      <h1>Todo List</h1>
+      <div style="width: 100%; display: flex; gap: 0.5em">
+        <input type="text" id="todoInput" placeholder="Add a new task..." />
+        <button id="addBtn">Add</button>
+      </div>
+      <ul id="todoList">
+        <!-- Todo items will appear here -->
+      </ul>
+    </div>
+
+     <!-- <script src="./static/script.js"></script> -->
+  </body>
 </html>

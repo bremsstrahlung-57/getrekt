@@ -4,19 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>C Server Demo</title>
-    <link rel="stylesheet" href="./static/style.css" />
+    <!-- <link rel="stylesheet" href="./static/style.css" /> -->
   </head>
-
   <body>
-    <div class="container">
-      <h1>Hello from C Server!</h1>
-      <p>
-        <span
-          >This HTML file is served by your custom
-          <a style="color: cornflowerblue">C server</a>.
-        </span>
-      </p>
+    <div class="navbar">
+      <nav>
+        <ul>
+          <li><a href="/public/index.html">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="/public/todo.html">Todo</a></li>
+        </ul>
+      </nav>
     </div>
-    <script src="./static/script.js"></script>
+    <section class="hero">
+      <h1>Welcome to Your C Server!</h1>
+      <p>
+        This visually rich landing page is served by your custom C backend.<br />Experience
+        the power of C and web together.
+      </p>
+      <a href="/public/todo.html"
+        ><button class="cta-btn">Try the Todo App</button></a
+      >
+    </section>
+    <section class="about" id="about">
+      <h2>About This Project</h2>
+      <p>
+        This project demonstrates a simple yet powerful HTTP server written in
+        C.<br />
+        It serves static files, handles custom routes, and even powers a Todo
+        app.<br />
+        Explore the code, learn about low-level networking, and see how C can
+        drive modern web experiences!
+      </p>
+    </section>
+    <footer>&copy; 2025 C Server Demo &mdash; Built with C and ❤️</footer>
   </body>
 </html>

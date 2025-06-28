@@ -170,7 +170,7 @@ void launch(struct Server *server)
         strncpy(bufpath, start, len);
         bufpath[len] = '\0';
 
-        if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/public") == 0)
+        if (strstr(buffer, "/public"))
         {
             char path[256];
             int path_size = sizeof(path);
@@ -198,7 +198,7 @@ void launch(struct Server *server)
                 send_404(new_socket);
             }
         }
-        else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/ ") == 0)
+        else if (strcmp(bufpath, "/ "))
         {
             char filepath[512] = "./public/index.html";
             const char *mime_type = get_mime_type(filepath);

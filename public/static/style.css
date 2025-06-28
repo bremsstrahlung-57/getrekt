@@ -1,14 +1,102 @@
-body{
+body {
+  background: #f7fafd;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  color: #23272f;
+  display: flex;
+  flex-direction: column;
+}
+.navbar {
+  background: #23272f;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   justify-content: center;
+}
+nav ul li {
+  margin: 0 1.2em;
+}
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1em;
+  transition: color 0.2s;
+}
+nav ul li a:hover {
+  color: #4fc3f7;
+}
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 2.5em 1em 1em 1em;
+  text-align: center;
 }
-.container {
-  height: 100%;
-  width: 100%;
-  background-color: wheat;
-  padding: 10px;
+.hero h1 {
+  font-size: 2.2em;
+  margin-bottom: 0.2em;
+  color: #1976d2;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
-h1 {
-  color: darkolivegreen;
+.hero p {
+  font-size: 1.1em;
+  margin-bottom: 1.2em;
+  color: #444;
+}
+.cta-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 0.7em 2em;
+  border-radius: 24px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.07);
+  transition: background 0.2s, transform 0.2s;
+}
+.cta-btn:hover {
+  background: #1251a3;
+  transform: translateY(-1px) scale(1.03);
+}
+.about {
+  max-width: 540px;
+  margin: 2em auto 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  padding: 1.5em 1.5em 1.2em 1.5em;
+  text-align: center;
+}
+.about h2 {
+  color: #1976d2;
+  margin-bottom: 0.4em;
+  font-size: 1.3em;
+  font-weight: 600;
+}
+.about p {
+  color: #444;
+  font-size: 1em;
+}
+footer {
+  background: #23272f;
+  color: #fff;
+  text-align: center;
+  padding: 0.8em 0 0.4em 0;
+  font-size: 0.95em;
+  margin-top: 2em;
+  letter-spacing: 0.5px;
+}
+@media (max-width: 600px) {
+  .hero h1 { font-size: 1.3em; }
+  .about { padding: 0.7em; }
 }
