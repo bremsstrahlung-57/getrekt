@@ -9,7 +9,7 @@
 Todo todos[100] = {
     {1, "Buy milk", 0},
     {2, "Write C code", 1}};
-int todo_count = 2;
+int todo_count = 5;
 
 void send_response(int socket, char *data)
 {
@@ -235,6 +235,26 @@ void launch(struct Server *server)
             }
             int len = text_end - text_start;
             strncpy(text, text_start, len);
+            text[len] = '\0';
+
+            if (todo_count > 100)
+            {
+                perror("Too many todos");
+                exit(EXIT_FAILURE);
+            }
+            int next_id = 3;
+            Todo new_todo;
+            new_todo.id = next_id++;
+            strncpy(new_todo.text, text, 255);
+            new_todo.done = 0;
+
+            todos[todo_count++] = new_todo;
+
+            char response[1024];
+            snprintf(response, sizeof(response),
+                     "{\"id\": %d, \"text\": \"%s\", \"done\": false}",
+                     new_todo.id, new_todo.text);
+            send_response(new_socket, response);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
