@@ -212,80 +212,15 @@ void launch(struct Server *server)
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            char text[512];
-
-            char *text_start = strstr(buffer, "\"text\":");
-            if (!text_start)
-            {
-                perror("ERROR!, 'text' field not found.");
-                exit(EXIT_FAILURE);
-            }
-            text_start = strchr(text_start + strlen("\"text\":"), '"');
-            if (!text_start)
-            {
-                perror("ERROR!, Opening quote for 'text' value not found.");
-                exit(EXIT_FAILURE);
-            }
-            text_start++;
-            char *text_end = strchr(text_start, '"');
-            if (!text_end)
-            {
-                perror("ERROR!, Closing quote for 'text' value not found.");
-                exit(EXIT_FAILURE);
-            }
-            int len = text_end - text_start;
-            strncpy(text, text_start, len);
-            text[len] = '\0';
-
-            if (todo_count > 100)
-            {
-                perror("Too many todos");
-                exit(EXIT_FAILURE);
-            }
-            int next_id = 3;
-            Todo new_todo;
-            new_todo.id = next_id++;
-            strncpy(new_todo.text, text, 255);
-            new_todo.done = 0;
-
-            todos[todo_count++] = new_todo;
-
-            char response[1024];
-            snprintf(response, sizeof(response),
-                     "{\"id\": %d, \"text\": \"%s\", \"done\": false}",
-                     new_todo.id, new_todo.text);
-            send_response(new_socket, response);
+            post_todo(new_socket, todos, buffer, todo_count);
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
-            int id = atoi(bufpath + strlen("/api/todos/"));
-            int index = -1;
-            for (int i = 0; i < todo_count; i++)
-            {
-                if (todos[i].id == id)
-                {
-                    index = i;
-                    printf("Found ID: %d at index: %d", todos[i].id, index);
-                    break;
-                }
-            }
-            if (index != -1)
-            {
-                for (int i = index; i < todo_count - 1; i++)
-                {
-                    todos[i] = todos[i + 1];
-                }
-                todo_count--;
-                char response[1024];
-                snprintf(response, sizeof(response), "{\"deleted\": %d}\n", id);
-                send_response(new_socket, response);
-            }
-            else
-            {
-                char response[1024];
-                snprintf(response, sizeof(response), "{\"error\": \"Not found\"}\n");
-                send_response(new_socket, response);
-            }
+            delete_todo(new_socket, todos, bufpath, todo_count);
+        }
+        else if (strcmp(method, "PUT") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
+        {
+            update_todo(new_socket, todos, buffer, bufpath, todo_count);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
