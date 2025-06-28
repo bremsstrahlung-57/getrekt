@@ -8,8 +8,10 @@
 
 Todo todos[100] = {
     {1, "Buy milk", 0},
-    {2, "Write C code", 1}};
-int todo_count = 5;
+    {2, "Write C code", 1},
+    {3, "Sleep", 0},
+    {4, "Play", 0}};
+int todo_count = sizeof(todos) / sizeof(todos[0]);
 
 void send_response(int socket, char *data)
 {
@@ -208,8 +210,6 @@ void launch(struct Server *server)
         {
             get_todos(new_socket, todos, todo_count);
         }
-
-        // TODO: Create and store the Todo
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
             char text[512];
@@ -256,6 +256,37 @@ void launch(struct Server *server)
                      new_todo.id, new_todo.text);
             send_response(new_socket, response);
         }
+        else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
+        {
+            int id = atoi(bufpath + strlen("/api/todos/"));
+            int index = -1;
+            for (int i = 0; i < todo_count; i++)
+            {
+                if (todos[i].id == id)
+                {
+                    index = i;
+                    printf("Found ID: %d at index: %d", todos[i].id, index);
+                    break;
+                }
+            }
+            if (index != -1)
+            {
+                for (int i = index; i < todo_count - 1; i++)
+                {
+                    todos[i] = todos[i + 1];
+                }
+                todo_count--;
+                char response[1024];
+                snprintf(response, sizeof(response), "{\"deleted\": %d}\n", id);
+                send_response(new_socket, response);
+            }
+            else
+            {
+                char response[1024];
+                snprintf(response, sizeof(response), "{\"error\": \"Not found\"}\n");
+                send_response(new_socket, response);
+            }
+        }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
             int content_len;
@@ -264,15 +295,12 @@ void launch(struct Server *server)
             const char *content = strchr(buffer, '{');
             char response[100];
             char name[50];
-            char *start;
-            char *end;
-
-            start = strstr(content, "\"name\": \"");
+            char *start = strstr(content, "\"name\": \"");
             if (start != NULL)
             {
                 start += strlen("\"name\": \"");
             }
-            end = strchr(start, '"');
+            char *end = strchr(start, '"');
             if (end != NULL)
             {
                 size_t len = end - start;
