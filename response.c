@@ -6,12 +6,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-Todo todos[100] = {
-    {1, "Buy milk", 0},
-    {2, "Write C code", 1},
-    {3, "Sleep", 0},
-    {4, "Play", 0}};
-int todo_count = sizeof(todos) / sizeof(todos[0]);
+Todo todos[100];
+int todo_count = 0;
 
 void send_response(int socket, char *data)
 {
@@ -172,6 +168,7 @@ void launch(struct Server *server)
 
         if (strstr(buffer, "/public"))
         {
+
             char path[256];
             int path_size = sizeof(path);
             parse_path(buffer, path, path_size);
@@ -198,7 +195,7 @@ void launch(struct Server *server)
                 send_404(new_socket);
             }
         }
-        else if (strcmp(bufpath, "/ "))
+        else if (strcmp(bufpath, "/ ") == 0)
         {
             char filepath[512] = "./public/index.html";
             const char *mime_type = get_mime_type(filepath);
@@ -212,7 +209,7 @@ void launch(struct Server *server)
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            post_todo(new_socket, todos, buffer, todo_count);
+            post_todo(new_socket, todos, buffer, &todo_count);
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
@@ -224,6 +221,7 @@ void launch(struct Server *server)
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
+
             int content_len;
             sscanf(buffer, "POST /echo HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.5.0\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d", &content_len);
 
@@ -247,6 +245,7 @@ void launch(struct Server *server)
         }
         else
         {
+
             send_404(new_socket);
         }
         close(new_socket);

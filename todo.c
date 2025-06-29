@@ -36,7 +36,8 @@ void parse_text(char *source, char *dest)
 
 void get_todos(int socket, Todo *todos, int num_todos)
 {
-    char respone_body[4096] = "[\n";
+    char respone_body[4096] = "[";
+
     for (int i = 0; i < num_todos; ++i)
     {
         char item[512];
@@ -52,23 +53,32 @@ void get_todos(int socket, Todo *todos, int num_todos)
     send_response(socket, respone_body);
 }
 
-void post_todo(int socket, Todo *todos, char *buffer, int todo_count)
+void post_todo(int socket, Todo *todos, char *buffer, int *todo_count)
 {
     char text[512];
+    int next_id;
     parse_text(buffer, text);
 
-    if (todo_count > 100)
+    if (*todo_count > 100)
     {
         perror("Too many todos");
         exit(EXIT_FAILURE);
     }
-    int next_id = todo_count - 1;
+    if (*todo_count == 0)
+    {
+        next_id = 1;
+    }
+    else
+    {
+        next_id = todos[*todo_count - 1].id + 1;
+    }
     Todo new_todo;
-    new_todo.id = next_id++;
+    new_todo.id = next_id;
     strncpy(new_todo.text, text, 255);
     new_todo.done = 0;
 
-    todos[todo_count++] = new_todo;
+    todos[*todo_count] = new_todo;
+    (*todo_count)++;
 
     char response[1024];
     snprintf(response, sizeof(response),
