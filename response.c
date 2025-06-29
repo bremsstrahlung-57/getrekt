@@ -1,13 +1,14 @@
 #include "Server.h"
 #include "response.h"
 #include "todo.h"
+#include "db.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-Todo todos[100];
-int todo_count = 0;
+// Todo todos[100];
+// int todo_count = 0;
 
 void send_response(int socket, char *data)
 {
@@ -205,19 +206,19 @@ void launch(struct Server *server)
         }
         else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            get_todos(new_socket, todos, todo_count);
+            // get_todos(new_socket, todos, todo_count);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            post_todo(new_socket, todos, buffer, &todo_count);
+            // post_todo(new_socket, todos, buffer, &todo_count);
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
-            delete_todo(new_socket, todos, bufpath, todo_count);
+            // delete_todo(new_socket, todos, bufpath, todo_count);
         }
         else if (strcmp(method, "PUT") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
-            update_todo(new_socket, todos, buffer, bufpath, todo_count);
+            // update_todo(new_socket, todos, buffer, bufpath, todo_count);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
