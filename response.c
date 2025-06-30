@@ -10,6 +10,9 @@
 // Todo todos[100];
 // int todo_count = 0;
 
+extern sqlite3 *DB;
+extern char *DB_FILE;
+
 void send_response(int socket, char *data)
 {
     int content_length = strlen(data);
@@ -211,6 +214,13 @@ void launch(struct Server *server)
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
             // post_todo(new_socket, todos, buffer, &todo_count);
+            char text[512];
+            parse_text(buffer, text);
+            insert_task(text);
+            char response[1024];
+            int id = get_last_id();
+            sprintf(response, "[{\"id\": %d\n}]", id);
+            send_response(new_socket, response);
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {

@@ -4,6 +4,8 @@
 #include <sqlite3.h>
 
 void seed_db();
-void init_db();
+int init_db();
+void insert_task(const char *text);
+int get_last_id();
 
 #endif // !TODO
