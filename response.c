@@ -6,30 +6,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-// Todo todos[100];
-// int todo_count = 0;
+#include <sqlite3.h>
 
 extern sqlite3 *DB;
 extern char *DB_FILE;
-
-void send_response(int socket, char *data)
-{
-    int content_length = strlen(data);
-    char response[2048];
-
-    snprintf(response, sizeof(response),
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Type: text/plain\r\n"
-             "Content-Length: %d\r\n"
-             "Access-Control-Allow-Origin: *\r\n"
-             "Connection: close\r\n"
-             "\r\n"
-             "%s",
-             content_length, data);
-
-    write(socket, response, strlen(response));
-}
 
 void serve_file(int socket, int status, const char *status_text, const char *content_type, const char *body, size_t body_size)
 {
@@ -210,6 +190,7 @@ void launch(struct Server *server)
         else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
             // get_todos(new_socket, todos, todo_count);
+            get_todos_in_json(new_socket);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {

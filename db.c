@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 
 #include "todo.h"
+#include "db.h"
 
 sqlite3 *DB;
 char *DB_FILE = "data.db";
@@ -50,7 +51,6 @@ void seed_db()
 
 void insert_task(const char *text)
 {
-    seed_db();
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO todos (text, done) VALUES (?, 0);";
     int rc;
@@ -89,4 +89,57 @@ void insert_task(const char *text)
 int get_last_id()
 {
     return sqlite3_last_insert_rowid(DB);
+}
+
+void get_todos_in_json(int socket)
+{
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT id, text, done FROM todos;";
+    int rc;
+    char *err_msg;
+
+    sqlite3_open(DB_FILE, &DB);
+
+    rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    char json_response[8192] = "[\n";
+    int delim = 1;
+
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        int id = sqlite3_column_int(stmt, 0);
+        const char *text = sqlite3_column_text(stmt, 1);
+        int done = sqlite3_column_int(stmt, 2);
+        char item[512];
+
+        sprintf(item,
+                "{\"id\":%d,\"task\":\"%s\",\"done\":%s}",
+                id,
+                text,
+                done ? "true" : "false");
+
+        if (!delim)
+            strcat(json_response, ",");
+        delim = 0;
+
+        strcat(json_response, item);
+        if (rc == SQLITE_DONE)
+        {
+            fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(DB));
+            break;
+        }
+    }
+
+    strcat(json_response, "\n]\n");
+    send_response(socket, json_response);
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(DB);
 }

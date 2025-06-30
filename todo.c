@@ -8,6 +8,24 @@
 #include "response.h"
 #include "todo.h"
 
+void send_response(int socket, char *data)
+{
+    int content_length = strlen(data);
+    char response[2048];
+
+    snprintf(response, sizeof(response),
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Type: text/plain\r\n"
+             "Content-Length: %d\r\n"
+             "Access-Control-Allow-Origin: *\r\n"
+             "Connection: close\r\n"
+             "\r\n"
+             "%s",
+             content_length, data);
+
+    write(socket, response, strlen(response));
+}
+
 void parse_text(char *source, char *dest)
 {
     char *text_start = strstr(source, "\"text\":");
