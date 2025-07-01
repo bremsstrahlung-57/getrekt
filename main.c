@@ -11,5 +11,6 @@ int main()
     seed_db();
     struct Server server = server_constructor(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 8080, 10, launch);
     server.launch(&server);
+    close_db();
     return 0;
 }

@@ -18,6 +18,7 @@ void serve_file(int socket, int status, const char *status_text, const char *con
                               "HTTP/1.1 %d %s\r\n"
                               "Content-Type: %s\r\n"
                               "Content-Length: %zu\r\n"
+                              "Access-Control-Allow-Origin: *\r\n"
                               "Connection: close\r\n"
                               "\r\n",
                               status, status_text, content_type, body_size);
@@ -150,7 +151,20 @@ void launch(struct Server *server)
         strncpy(bufpath, start, len);
         bufpath[len] = '\0';
 
-        if (strstr(buffer, "/public"))
+        if (strcmp(method, "OPTIONS") == 0)
+        {
+            const char *preflight_response =
+                "HTTP/1.1 204 No Content\r\n"
+                "Access-Control-Allow-Origin: *\r\n"
+                "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n"
+                "Access-Control-Allow-Headers: Content-Type\r\n"
+                "Content-Length: 0\r\n"
+                "Connection: close\r\n"
+                "\r\n";
+            write(socket, preflight_response, strlen(preflight_response));
+            return;
+        }
+        else if (strstr(buffer, "/public"))
         {
 
             char path[256];
@@ -189,34 +203,51 @@ void launch(struct Server *server)
         }
         else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            // get_todos(new_socket, todos, todo_count);
-            get_todos_in_json(new_socket);
+            if (get_todos_in_json(new_socket))
+            {
+                send_response(new_socket, "{\"error\": 404 Not Found}\n");
+            };
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
         {
-            // post_todo(new_socket, todos, buffer, &todo_count);
             char text[512];
             parse_text(buffer, text);
-            insert_task(text);
+            if (insert_task(text))
+            {
+                send_response(new_socket, "{\"error\": 500 Internal Server Error}\n");
+            };
             int id = get_last_id();
-            json_todo_by_id(new_socket, id);
+            if (json_todo_by_id(new_socket, id))
+            {
+                send_response(new_socket, "{\"error\": 404 Not Found}\n");
+            };
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
-            // delete_todo(new_socket, todos, bufpath, todo_count);
             int id = atoi(bufpath + strlen("/api/todos/"));
-            json_todo_by_id(new_socket, id);
-            delete_todo_by_id(id, new_socket);
+            if (json_todo_by_id(new_socket, id))
+            {
+                send_response(new_socket, "{\"error\": 404 Not Found}\n");
+            };
+            if (delete_todo_by_id(id, new_socket))
+            {
+                send_response(new_socket, "{\"error\": 500 Internal Server Error}\n");
+            };
         }
         else if (strcmp(method, "PUT") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
-            // update_todo(new_socket, todos, buffer, bufpath, todo_count);
             int id;
             int done;
             char text[256];
             get_update(buffer, bufpath, text, &id, &done);
-            update_todo_by_id(id, text, done);
-            json_todo_by_id(new_socket, id);
+            if (update_todo_by_id(id, text, done))
+            {
+                send_response(new_socket, "{\"error\": 404 Not Found}\n");
+            };
+            if (json_todo_by_id(new_socket, id))
+            {
+                send_response(new_socket, "{\"error\": 404 Not Found}\n");
+            };
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {
@@ -244,7 +275,7 @@ void launch(struct Server *server)
         }
         else
         {
-
+            send_response(new_socket, "Error 404 Not Found");
             send_404(new_socket);
         }
         close(new_socket);

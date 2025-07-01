@@ -18,6 +18,8 @@ void send_response(int socket, char *data)
              "Content-Type: text/plain\r\n"
              "Content-Length: %d\r\n"
              "Access-Control-Allow-Origin: *\r\n"
+             "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n"
+             "Access-Control-Allow-Headers: Content-Type\r\n"
              "Connection: close\r\n"
              "\r\n"
              "%s",
