@@ -151,20 +151,9 @@ void launch(struct Server *server)
         strncpy(bufpath, start, len);
         bufpath[len] = '\0';
 
-        if (strcmp(method, "OPTIONS") == 0)
-        {
-            const char *preflight_response =
-                "HTTP/1.1 204 No Content\r\n"
-                "Access-Control-Allow-Origin: *\r\n"
-                "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n"
-                "Access-Control-Allow-Headers: Content-Type\r\n"
-                "Content-Length: 0\r\n"
-                "Connection: close\r\n"
-                "\r\n";
-            write(socket, preflight_response, strlen(preflight_response));
-            return;
-        }
-        else if (strstr(buffer, "/public"))
+        printf("[DEBUG]\nMethod: %s\nPath: %s\n", method, bufpath);
+
+        if (strstr(buffer, "/public"))
         {
 
             char path[256];
@@ -193,7 +182,7 @@ void launch(struct Server *server)
                 send_404(new_socket);
             }
         }
-        else if (strcmp(bufpath, "/ ") == 0)
+        else if (strcmp(bufpath, "/") == 0)
         {
             char filepath[512] = "./public/index.html";
             const char *mime_type = get_mime_type(filepath);
@@ -201,14 +190,26 @@ void launch(struct Server *server)
             char *file_content = read_file(filepath, &file_size);
             serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
         }
-        else if (strcmp(method, "GET") == 0 && strcmp(bufpath, "/api/todos") == 0)
+        else if (strcmp(method, "OPTIONS") == 0)
+        {
+            const char *preflight_response =
+                "HTTP/1.1 204 No Content\r\n"
+                "Access-Control-Allow-Origin: *\r\n"
+                "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n"
+                "Access-Control-Allow-Headers: Content-Type\r\n"
+                "Content-Length: 0\r\n"
+                "Connection: close\r\n"
+                "\r\n";
+            write(new_socket, preflight_response, strlen(preflight_response));
+        }
+        else if (strcmp(method, "GET") == 0 && (strcmp(bufpath, "/api/todos") == 0 || strcmp(bufpath, "/api/todos/") == 0))
         {
             if (get_todos_in_json(new_socket))
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
         }
-        else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/api/todos") == 0)
+        else if (strcmp(method, "POST") == 0 && (strcmp(bufpath, "/api/todos") == 0 || strcmp(bufpath, "/api/todos/") == 0))
         {
             char text[512];
             parse_text(buffer, text);
