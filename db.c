@@ -91,12 +91,109 @@ int get_last_id()
     return sqlite3_last_insert_rowid(DB);
 }
 
+void json_todo_by_id(int socket, int id)
+{
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT text, done FROM todos WHERE id = ?;";
+    int rc;
+
+    sqlite3_open(DB_FILE, &DB);
+
+    rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_bind_int(stmt, 1, id);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind id: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW)
+    {
+        const char *text = (const char *)sqlite3_column_text(stmt, 0);
+        int done = sqlite3_column_int(stmt, 1);
+        char json_response[1024];
+        sprintf(json_response,
+                "{\"id\":%d,\"task\":\"%s\",\"done\":%s}",
+                id,
+                text,
+                done ? "true" : "false");
+        send_response(socket, json_response);
+    }
+    else if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "No data found for ID (%d): %s\n", id, sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        fprintf(stderr, "Error stepping: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(DB);
+}
+
+void get_task_from_id(int id, char *dest)
+{
+    sqlite3_stmt *select_stmt;
+    const char *sql_select = "SELECT text FROM todos WHERE id = ?;";
+    int rc;
+
+    rc = sqlite3_prepare_v2(DB, sql_select, -1, &select_stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare select statement: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(select_stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_bind_int(select_stmt, 1, id);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind id for select: %s\n",
+                sqlite3_errmsg(DB));
+        sqlite3_finalize(select_stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+    rc = sqlite3_step(select_stmt);
+
+    if (rc == SQLITE_ROW) {
+        const char *text = (const char *)sqlite3_column_text(select_stmt, 0);
+        if (text) {
+            strcpy(dest, text);
+        } else {
+            dest[0] = '\0';
+        }
+    } else {
+        dest[0] = '\0';
+    }
+
+    sqlite3_finalize(select_stmt);
+}
+
 void get_todos_in_json(int socket)
 {
     sqlite3_stmt *stmt;
     const char *sql = "SELECT id, text, done FROM todos;";
     int rc;
-    char *err_msg;
 
     sqlite3_open(DB_FILE, &DB);
 
@@ -142,4 +239,71 @@ void get_todos_in_json(int socket)
 
     sqlite3_finalize(stmt);
     sqlite3_close(DB);
+}
+
+void update_todo_by_id(int id, char *text, int done)
+{
+    sqlite3_stmt *stmt;
+    const char *sql = "UPDATE todos SET text = ?, done = ? WHERE id = ?;";
+    int rc;
+
+    sqlite3_open(DB_FILE, &DB);
+
+    rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    if (text[0] == '\0' || text == NULL)
+    {
+        get_task_from_id(id, text);
+    }
+
+    rc = sqlite3_bind_text(stmt, 1, text, -1, SQLITE_TRANSIENT);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind text: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_bind_int(stmt, 2, done);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind done: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_bind_int(stmt, 3, id);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind id: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+        sqlite3_close(DB);
+        exit(EXIT_FAILURE);
+    }
+    sqlite3_finalize(stmt);
+    sqlite3_close(DB);
+    text[0] = '\0';
+}
+
+void delete_todo_by_id(int id)
+{
+    return;
 }

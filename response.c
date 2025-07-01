@@ -210,6 +210,12 @@ void launch(struct Server *server)
         else if (strcmp(method, "PUT") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
             // update_todo(new_socket, todos, buffer, bufpath, todo_count);
+            int id;
+            int done;
+            char text[256];
+            get_update(buffer, bufpath, text, &id, &done);
+            update_todo_by_id(id, text, done);
+            json_todo_by_id(new_socket, id);
         }
         else if (strcmp(method, "POST") == 0 && strcmp(bufpath, "/echo") == 0)
         {

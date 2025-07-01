@@ -10,6 +10,8 @@ typedef struct Todo
 
 void send_response(int socket, char *data);
 void parse_text(char *source, char *dest);
+void get_update(char *buffer, char *bufpath, char *dest, int *id, int *done);
+
 void get_todos(int socket, Todo *todos, int num_todos);
 void post_todo(int socket, Todo *todos, char *buffer, int *todo_count);
 void update_todo(int socket, Todo *todos, char *buffer, char *bufpath, int todo_count);

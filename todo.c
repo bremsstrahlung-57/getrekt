@@ -52,6 +52,48 @@ void parse_text(char *source, char *dest)
     dest[len] = '\0';
 }
 
+void get_update(char *buffer, char *bufpath, char *dest, int *id, int *done)
+{
+    *id = atoi(bufpath + strlen("/api/todos/"));
+    char text[255];
+
+    if (strstr(buffer, "\"text\"") && strstr(buffer, "\"done\""))
+    {
+        parse_text(buffer, text);
+        strncpy(dest, text, 255);
+
+        if (strstr(buffer, "\"done\": true"))
+        {
+            *done = 1;
+        }
+        else if (strstr(buffer, "\"done\": false"))
+        {
+            *done = 0;
+        }
+    }
+
+    else if (strstr(buffer, "\"text\""))
+    {
+        parse_text(buffer, text);
+        strncpy(dest, text, 255);
+    }
+
+    else if (strstr(buffer, "\"done\""))
+    {
+
+        if (strstr(buffer, "\"done\": true"))
+        {
+            *done = 1;
+        }
+
+        else if (strstr(buffer, "\"done\": false"))
+        {
+            *done = 0;
+        }
+    }
+}
+
+// below functions are not being used but removing them feels like `potter breaking his own pots`, so i kept it
 void get_todos(int socket, Todo *todos, int num_todos)
 {
     char respone_body[4096] = "[";
