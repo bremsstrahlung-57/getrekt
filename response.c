@@ -198,14 +198,15 @@ void launch(struct Server *server)
             char text[512];
             parse_text(buffer, text);
             insert_task(text);
-            char response[1024];
             int id = get_last_id();
-            sprintf(response, "[{\"id\": %d\n}]", id);
-            send_response(new_socket, response);
+            json_todo_by_id(new_socket, id);
         }
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
             // delete_todo(new_socket, todos, bufpath, todo_count);
+            int id = atoi(bufpath + strlen("/api/todos/"));
+            json_todo_by_id(new_socket, id);
+            delete_todo_by_id(id, new_socket);
         }
         else if (strcmp(method, "PUT") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
