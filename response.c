@@ -8,9 +8,6 @@
 #include <unistd.h>
 #include <sqlite3.h>
 
-extern sqlite3 *DB;
-extern char *DB_FILE;
-
 void serve_file(int socket, int status, const char *status_text, const char *content_type, const char *body, size_t body_size)
 {
     char header[1024];
@@ -106,6 +103,7 @@ char *read_file(const char *filename, size_t *file_size)
     fclose(file);
 
     return buffer;
+    free(buffer);
 }
 
 void send_404(int socket)
@@ -115,6 +113,7 @@ void send_404(int socket)
     size_t file_size;
     char *file_content = read_file(filepath, &file_size);
     serve_file(socket, 404, "Not Found", mime_type, file_content, file_size);
+    free(file_content);
 }
 
 void launch(struct Server *server)
@@ -140,28 +139,53 @@ void launch(struct Server *server)
 
         char method[10], bufpath[64];
         char *start = &buffer[0];
+        if (!start)
+        {
+            send_response(new_socket, "HTTP/1.1 400 Bad Request\r\n\r\n");
+            close(new_socket);
+            continue;
+        }
         char *end = strchr(start, ' ');
+        if (!end)
+        {
+            send_response(new_socket, "HTTP/1.1 400 Bad Request\r\n\r\n");
+            close(new_socket);
+            continue;
+        }
+
         int len = end - start;
         strncpy(method, start, len);
         method[len] = '\0';
-
         start = strchr(end, '/');
+        if (!start)
+        {
+            send_response(new_socket, "HTTP/1.1 400 Bad Request\r\n\r\n");
+            close(new_socket);
+            continue;
+        }
         end = strchr(start, ' ');
+        if (!end)
+        {
+            send_response(new_socket, "HTTP/1.1 400 Bad Request\r\n\r\n");
+            close(new_socket);
+            continue;
+        }
+
         len = end - start;
         strncpy(bufpath, start, len);
         bufpath[len] = '\0';
 
         printf("[DEBUG]\nMethod: %s\nPath: %s\n", method, bufpath);
 
-        if (strstr(buffer, "/public"))
+        if (strstr(bufpath, "/public"))
         {
 
-            char path[256];
+            char path[512];
             int path_size = sizeof(path);
             parse_path(buffer, path, path_size);
             printf("Requested path: %s\n", path);
 
-            char filepath[512] = ".";
+            char filepath[1024] = ".";
             strcat(filepath, path);
 
             printf("Looking for file: %s\n", filepath);
@@ -185,10 +209,20 @@ void launch(struct Server *server)
         else if (strcmp(bufpath, "/") == 0)
         {
             char filepath[512] = "./public/index.html";
-            const char *mime_type = get_mime_type(filepath);
             size_t file_size;
             char *file_content = read_file(filepath, &file_size);
-            serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
+            if (file_content)
+            {
+                const char *mime_type = get_mime_type(filepath);
+                serve_file(new_socket, 200, "OK", mime_type, file_content, file_size);
+                free(file_content);
+                printf("Served: %s (%s, %zu bytes)\n", filepath, mime_type, file_size);
+            }
+            else
+            {
+                send_404(new_socket);
+                printf("File not found: %s\n", filepath);
+            }
         }
         else if (strcmp(method, "OPTIONS") == 0)
         {
@@ -202,16 +236,16 @@ void launch(struct Server *server)
                 "\r\n";
             write(new_socket, preflight_response, strlen(preflight_response));
         }
-        else if (strcmp(method, "GET") == 0 && (strcmp(bufpath, "/api/todos") == 0 || strcmp(bufpath, "/api/todos/") == 0))
+        else if ((strcmp(bufpath, "/api/todos") == 0))
         {
             if (get_todos_in_json(new_socket))
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
         }
-        else if (strcmp(method, "POST") == 0 && (strcmp(bufpath, "/api/todos") == 0 || strcmp(bufpath, "/api/todos/") == 0))
+        else if (strcmp(method, "POST") == 0 && (strcmp(bufpath, "/api/todos") == 0))
         {
-            char text[512];
+            char text[1024];
             parse_text(buffer, text);
             if (insert_task(text))
             {
@@ -276,7 +310,6 @@ void launch(struct Server *server)
         }
         else
         {
-            send_response(new_socket, "Error 404 Not Found");
             send_404(new_socket);
         }
         close(new_socket);
