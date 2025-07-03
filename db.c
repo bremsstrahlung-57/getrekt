@@ -49,54 +49,17 @@ void seed_db()
     }
 }
 
-int insert_task(const char *text)
+void close_db()
 {
-    sqlite3_stmt *stmt;
-    const char *sql = "INSERT INTO todos (text, done) VALUES (?, 0);";
-    int rc;
-
-    rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK)
-    {
-        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(DB));
-        sqlite3_finalize(stmt);
-
-        return 1;
-    }
-
-    rc = sqlite3_bind_text(stmt, 1, text, -1, SQLITE_TRANSIENT);
-    if (rc != SQLITE_OK)
-    {
-        fprintf(stderr, "Failed to bind text: %s\n", sqlite3_errmsg(DB));
-        sqlite3_finalize(stmt);
-
-        return 1;
-    }
-
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE)
-    {
-        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(DB));
-        sqlite3_finalize(stmt);
-
-        return 1;
-    }
-
-    sqlite3_finalize(stmt);
-
-    return 0;
+    sqlite3_close(DB);
 }
 
-int get_last_id()
-{
-    return sqlite3_last_insert_rowid(DB);
-}
-
-int json_todo_by_id(int socket, int id)
+int json_todo_by_id(int socket)
 {
     sqlite3_stmt *stmt;
     const char *sql = "SELECT text, done FROM todos WHERE id = ?;";
     int rc;
+    int id = sqlite3_last_insert_rowid(DB);
 
     rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK)
@@ -193,6 +156,44 @@ int get_task_from_id(int id, char *dest)
     }
 
     sqlite3_finalize(select_stmt);
+    return 0;
+}
+
+int insert_task(const char *text)
+{
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO todos (text, done) VALUES (?, 0);";
+    int rc;
+
+    rc = sqlite3_prepare_v2(DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+
+        return 1;
+    }
+
+    rc = sqlite3_bind_text(stmt, 1, text, -1, SQLITE_TRANSIENT);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind text: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+
+        return 1;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(DB));
+        sqlite3_finalize(stmt);
+
+        return 1;
+    }
+
+    sqlite3_finalize(stmt);
+
     return 0;
 }
 
@@ -340,9 +341,4 @@ int delete_todo_by_id(int id, int socket)
     sqlite3_finalize(stmt);
 
     return 0;
-}
-
-void close_db()
-{
-    sqlite3_close(DB);
 }

@@ -236,7 +236,7 @@ void launch(struct Server *server)
                 "\r\n";
             write(new_socket, preflight_response, strlen(preflight_response));
         }
-        else if ((strcmp(bufpath, "/api/todos") == 0))
+        else if (strcmp(method, "GET") == 0 && (strcmp(bufpath, "/api/todos") == 0))
         {
             if (get_todos_in_json(new_socket))
             {
@@ -251,8 +251,7 @@ void launch(struct Server *server)
             {
                 send_response(new_socket, "{\"error\": 500 Internal Server Error}\n");
             };
-            int id = get_last_id();
-            if (json_todo_by_id(new_socket, id))
+            if (json_todo_by_id(new_socket))
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
@@ -260,7 +259,7 @@ void launch(struct Server *server)
         else if (strcmp(method, "DELETE") == 0 && strncmp(bufpath, "/api/todos/", 11) == 0)
         {
             int id = atoi(bufpath + strlen("/api/todos/"));
-            if (json_todo_by_id(new_socket, id))
+            if (json_todo_by_id(new_socket))
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
@@ -279,7 +278,7 @@ void launch(struct Server *server)
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
-            if (json_todo_by_id(new_socket, id))
+            if (json_todo_by_id(new_socket))
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };

@@ -6,7 +6,7 @@ body {
 }
 
 nav {
-  border-bottom: 1px dotted #aaa;
+  border-bottom: 2px dashed #000000;
   padding: 0.5em;
 }
 
@@ -28,7 +28,7 @@ nav ul li a {
   margin: 2em auto;
   max-width: 600px;
   text-align: center;
-  border: 1px dotted #ccc;
+  border: 2px dashed #000000;
   padding: 1em;
 }
 
@@ -44,7 +44,7 @@ nav ul li a {
 
 .cta-btn {
   padding: 0.4em 1em;
-  border: 1px dotted #000;
+  border: 1px solid #000;
   background: none;
   color: #000;
   cursor: pointer;
@@ -53,13 +53,13 @@ nav ul li a {
 .about {
   margin: 2em auto;
   max-width: 600px;
-  border: 1px dotted #ccc;
+  border: 2px dashed #000000;
   padding: 1em;
   text-align: center;
 }
 
 footer {
-  border-top: 1px dotted #aaa;
+  border-top: 2px dotted #000000;
   text-align: center;
   padding: 1em 0;
   font-size: 0.9em;
