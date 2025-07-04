@@ -17,6 +17,7 @@ body {
   margin-bottom: 1em;
   text-decoration: underline;
   color: #000;
+  width: 65%;
 }
 
 h1 {
@@ -42,7 +43,7 @@ h1 {
   transition: all 0.2s ease-in;
 }
 
-#addBtn:hover{
+#addBtn:hover {
   border: 2px dashed #000;
 }
 
@@ -66,7 +67,7 @@ h1 {
   color: #555;
 }
 
-.deleteBtn {
+.Btn {
   border: 1px dashed #888;
   background: none;
   padding: 0.2em 0.6em;
@@ -77,17 +78,23 @@ h1 {
   transition: all 0.2s ease-in;
 }
 
-.deleteBtn:hover{
+.Btn:hover {
   border: 1px dashed #000;
   color: #000;
 }
 
-.checkBox{
+.checkBox {
   border: 1px solid #000;
   background: none;
   padding: 0.2em 0.6em;
   margin: 0.2em 0.6em;
   cursor: pointer;
+}
+
+.editInput{
+  padding: 0.5em;
+  border: 2px dashed #808080;
+  font-size: 1em;
 }
 
 @media (max-width: 600px) {

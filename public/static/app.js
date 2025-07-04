@@ -37,7 +37,11 @@ async function fetchData() {
         const textElement = newLi.querySelector("a");
         const parts = newCheckBox.id.split("-");
         const id = parseInt(parts[1]);
-        checkTask(id);
+        const checkbox = document.getElementById(`done-${id}`);
+        const newDoneValue = checkbox.checked;
+        const li = checkbox.closest("li");
+        const text = li.querySelector("a").textContent;
+        updateTask(id, text, newDoneValue);
         if (newCheckBox.checked) {
           textElement.style.textDecoration = "line-through";
         } else {
@@ -46,12 +50,17 @@ async function fetchData() {
       });
 
       editBtn.textContent = "edit";
-      editBtn.className = "deleteBtn";
-      editBtn.id = "editBtn";
+      editBtn.className = "Btn";
+      editBtn.id = `editBtn-${element.id}`;
       btnDiv.appendChild(editBtn);
+      editBtn.addEventListener("click", function () {
+        const parts = editBtn.id.split("-");
+        const id = parseInt(parts[1]);
+        editTask(id);
+      });
 
       delBtn.textContent = "x";
-      delBtn.className = "deleteBtn";
+      delBtn.className = "Btn";
       delBtn.id = `deleteBtn-${element.id}`;
       btnDiv.appendChild(delBtn);
       delBtn.addEventListener("click", function () {
@@ -85,15 +94,14 @@ function deleteTask(id) {
     .catch((error) => {
       console.error("Error during DELETE request: ", error);
     });
+
+  setTimeout(() => {
+    todoList.innerHTML = "";
+    fetchData();
+  }, 1000);
 }
 
-function checkTask(id) {
-  const checkbox = document.getElementById(`done-${id}`);
-  const newDoneValue = checkbox.checked;
-
-  const li = checkbox.closest("li");
-  const text = li.querySelector("a").textContent;
-
+function updateTask(id, text, newDoneValue) {
   fetch(`http://localhost:8080/api/todos/${id}`, {
     method: "PUT",
     headers: {
@@ -147,6 +155,11 @@ function addTask() {
     });
 
   inputField.value = "";
+
+  setTimeout(() => {
+    todoList.innerHTML = "";
+    fetchData();
+  }, 1000);
 }
 
 add.onclick = addTask;
@@ -156,5 +169,51 @@ todoInput.addEventListener("keydown", function (event) {
     addTask();
   }
 });
+
+function editTask(id) {
+  const btnDiv = document.getElementById(`task-${id}`);
+  const li = btnDiv.closest("li");
+  const textElement = li.querySelector("a");
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = textElement.textContent;
+  input.className = "editInput";
+  input.style.marginRight = "8px";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.textContent = "Save";
+  saveBtn.className = "Btn";
+
+  li.insertBefore(input, textElement);
+  li.insertBefore(saveBtn, btnDiv);
+  textElement.style.display = "none";
+
+  input.focus();
+
+  saveBtn.onclick = function () {
+    const newText = input.value.trim();
+    const doneValue = li.querySelector(".checkBox").checked;
+
+    li.removeChild(input);
+    li.removeChild(saveBtn);
+    textElement.style.display = "";
+
+    if (newText !== "") {
+      textElement.textContent = newText;
+      updateTask(id, newText, doneValue);
+      setTimeout(() => {
+        todoList.innerHTML = "";
+        fetchData();
+      }, 1000);
+    }
+  };
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      saveBtn.click();
+    }
+  });
+}
 
 fetchData();
