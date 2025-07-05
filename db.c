@@ -15,7 +15,7 @@ int init_db()
     int rc = sqlite3_open(DB_FILE, &DB);
     if (rc == SQLITE_OK)
     {
-        printf("Database opened successfully.\n");
+        printf("Database opened successfully ^_^\n");
         return 0;
     }
     else
@@ -218,7 +218,8 @@ int get_todos_in_json(int socket)
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     {
         int id = sqlite3_column_int(stmt, 0);
-        const char *text = sqlite3_column_text(stmt, 1);
+        const unsigned char *utext = sqlite3_column_text(stmt, 1);
+        const char *text = (const char *)utext;
         int done = sqlite3_column_int(stmt, 2);
         char item[512];
 
@@ -309,7 +310,7 @@ int update_todo_by_id(int id, char *text, int done)
     return 0;
 }
 
-int delete_todo_by_id(int id, int socket)
+int delete_todo_by_id(int id)
 {
     sqlite3_stmt *stmt;
     const char *sql = "DELETE FROM todos WHERE id = ?";

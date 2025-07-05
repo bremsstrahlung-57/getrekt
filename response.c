@@ -263,7 +263,7 @@ void launch(struct Server *server)
             {
                 send_response(new_socket, "{\"error\": 404 Not Found}\n");
             };
-            if (delete_todo_by_id(id, new_socket))
+            if (delete_todo_by_id(id))
             {
                 send_response(new_socket, "{\"error\": 500 Internal Server Error}\n");
             };

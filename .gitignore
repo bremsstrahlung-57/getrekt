@@ -1,5 +1,5 @@
 .vscode
 main
 code.txt
-makefile.mk
 *.db
+*.o
