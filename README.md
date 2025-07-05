@@ -14,7 +14,7 @@ built from scratch in c
 * <input checked="" disabled="" type="checkbox"> stable
 * <input checked="" disabled="" type="checkbox"> good looking
 
-https://github.com/user-attachments/assets/c3b07c71-49e0-4bb3-b961-5d5a7a4b69bb
+https://github.com/user-attachments/assets/230d940e-02a9-4d15-b4dc-398def6b014f
 
 ### future plans
 * <input disabled="" type="checkbox"> middleware
