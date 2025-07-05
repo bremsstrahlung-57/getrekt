@@ -16,6 +16,7 @@ built from scratch in c
 
 <video src="./public/static/screen_recording_05_07_2025.mp4" controls></video>
 
+https://github.com/bremsstrahlung-57/getrekt/blob/master/public/static/screen_recording_05_07_2025.mp4
 
 ### future plans
 * <input disabled="" type="checkbox"> middleware
