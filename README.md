@@ -14,9 +14,7 @@ built from scratch in c
 * <input checked="" disabled="" type="checkbox"> stable
 * <input checked="" disabled="" type="checkbox"> good looking
 
-<video src="./public/static/screen_recording_05_07_2025.mp4" controls></video>
-
-https://github.com/bremsstrahlung-57/getrekt/blob/master/public/static/screen_recording_05_07_2025.mp4
+https://github.com/user-attachments/assets/c3b07c71-49e0-4bb3-b961-5d5a7a4b69bb
 
 ### future plans
 * <input disabled="" type="checkbox"> middleware
