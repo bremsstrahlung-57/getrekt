@@ -14,6 +14,9 @@ built from scratch in c
 * <input checked="" disabled="" type="checkbox"> stable
 * <input checked="" disabled="" type="checkbox"> good looking
 
+<video src="./public/static/screen_recording_05_07_2025.mp4" controls></video>
+
+
 ### future plans
 * <input disabled="" type="checkbox"> middleware
 * <input disabled="" type="checkbox"> authentication
