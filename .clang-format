@@ -1,0 +1,17 @@
+BasedOnStyle: WebKit
+IndentWidth: 4
+UseTab: Never
+BreakBeforeBraces: Attach
+AlignAfterOpenBracket: DontAlign
+
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false

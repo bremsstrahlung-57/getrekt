@@ -1,0 +1,1 @@
+#define GETREKT_VERSION "0.1.0"
