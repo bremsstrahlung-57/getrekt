@@ -1,5 +1,39 @@
-.vscode
-main
-code.txt
-*.db
+# --------------------
+# Build artifacts
+# --------------------
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+
+# Object files and binaries
 *.o
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+/main
+
+# --------------------
+# Runtime data
+# --------------------
+# SQLite database
+/var/lib/data.db
+
+# Logs
+*.log
+
+# --------------------
+# Editor / OS files
+# --------------------
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS Finder metadata
+.DS_Store
+
+# Windows Explorer metadata
+Thumbs.db
